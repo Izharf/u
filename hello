@@ -1,0 +1,175 @@
+/* -------------------------------------------------
+   SW Blog Grid Shortcode with Pagination
+------------------------------------------------- */
+
+function sw_blog_grid_shortcode($atts) {
+
+    $atts = shortcode_atts(array(
+        'posts_per_page' => 6,
+    ), $atts);
+
+    // Get current page
+    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+
+    $args = array(
+        'post_type'      => 'post',
+        'posts_per_page' => intval($atts['posts_per_page']),
+        'paged'          => $paged,
+    );
+
+    $query = new WP_Query($args);
+
+    ob_start();
+
+    if ($query->have_posts()) :
+        echo '<div class="sw-blog-grid">';
+
+        while ($query->have_posts()) : $query->the_post(); ?>
+
+            <div class="sw-blog-card">
+                
+                <div class="sw-blog-image">
+                    <a href="<?php the_permalink(); ?>">
+                        <?php 
+                        if (has_post_thumbnail()) {
+                            the_post_thumbnail('medium_large');
+                        }
+                        ?>
+                    </a>
+                </div>
+
+                <div class="sw-blog-content">
+                    <span class="sw-blog-date"><?php echo get_the_date(); ?></span>
+
+                    <h3 class="sw-blog-title">
+                        <a href="<?php the_permalink(); ?>">
+                            <?php the_title(); ?>
+                        </a>
+                    </h3>
+
+                    <p class="sw-blog-excerpt">
+                        <?php echo wp_trim_words(get_the_excerpt(), 18); ?>
+                    </p>
+
+                    <a class="sw-read-more" href="<?php the_permalink(); ?>">
+                        Read More →
+                    </a>
+                </div>
+
+            </div>
+
+        <?php endwhile;
+
+        echo '</div>';
+
+        // Pagination
+        echo '<div class="sw-pagination">';
+        echo paginate_links(array(
+            'total'   => $query->max_num_pages,
+            'current' => $paged,
+            'prev_text' => '« Prev',
+            'next_text' => 'Next »',
+        ));
+        echo '</div>';
+
+    endif;
+
+    wp_reset_postdata();
+
+    return ob_get_clean();
+}
+
+add_shortcode('sw_blog', 'sw_blog_grid_shortcode');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Blog Grid */
+.sw-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+/* Card */
+.sw-blog-card {
+    background: #0b0b0b;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(255, 200, 0, 0.12);
+    transition: transform 0.3s ease;
+}
+
+.sw-blog-card:hover {
+    transform: translateY(-6px);
+}
+
+/* Image */
+.sw-blog-image img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+/* Content */
+.sw-blog-content {
+    padding: 18px;
+}
+
+.sw-blog-date {
+    font-size: 13px;
+    color: #c9a43a;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.sw-blog-title a {
+    color: #fff;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.sw-blog-excerpt {
+    color: #cfcfcf;
+    font-size: 14px;
+    margin: 12px 0;
+}
+
+/* Read More */
+.sw-read-more {
+    color: #d4af37;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Pagination */
+.sw-pagination {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.sw-pagination a,
+.sw-pagination span {
+    display: inline-block;
+    padding: 8px 14px;
+    margin: 0 4px;
+    border-radius: 6px;
+    background: #111;
+    color: #d4af37;
+    text-decoration: none;
+}
+
+.sw-pagination .current {
+    background: #d4af37;
+    color: #000;
+}
